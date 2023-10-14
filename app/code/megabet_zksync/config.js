@@ -1,7 +1,7 @@
 export default config = {
     testnet: {
         contract_address: {
-            megabet_token: "",
+            megabet_token: "0x2C6d48b1a11EdF39c62ED753197d12fFda2Db2E0",
             megabet_staking: "",
             megabet_main: ""
         },
