@@ -13,7 +13,7 @@ const config = {
         },
         cron_jobs: {
             megabet_token: {
-                whitelist_cron: {
+                scan_whitelists_cron: {
                     status: true,
                     cron_time: '* * * * * *'
                 }

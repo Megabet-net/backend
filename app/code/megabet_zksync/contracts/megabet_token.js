@@ -1,4 +1,4 @@
-{
+const MegaBetTokenContractAbi = {
 	"_format": "hh-zksolc-artifact-1",
 	"contractName": "MegaBetToken",
 	"sourceName": "contracts/MegaBet_Token.sol",
@@ -771,5 +771,7 @@
 	"linkReferences": {},
 	"deployedLinkReferences": {},
 	"factoryDeps": {}
-  }
+};
+
+export default MegaBetTokenContractAbi;
   
