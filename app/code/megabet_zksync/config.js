@@ -1,7 +1,7 @@
 const config = {
     testnet: {
         contract_address: {
-            megabet_token: "0x2C6d48b1a11EdF39c62ED753197d12fFda2Db2E0",
+            megabet_token: "0xd4403c156a0A2820Bf68BfA33FA74C67F306Ce13",
             megabet_staking: "",
             megabet_main: ""
         },

@@ -46,7 +46,7 @@ export async function getWhitelists() {
     console.log(`WhitelistsNum ${whitelistNums}`);
     if (whitelistNums) {
         for(let i = 0; i < whitelistNums; i++) {
-
+            
         }
     }
 }
