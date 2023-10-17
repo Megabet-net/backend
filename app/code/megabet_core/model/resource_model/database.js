@@ -1,6 +1,9 @@
 import mongoose from 'mongoose';
 
 const WhitelistSchema = new mongoose.Schema({
+    id: {
+        type: Number
+    },
     address: {
         type: String
     },
@@ -12,6 +15,6 @@ const WhitelistSchema = new mongoose.Schema({
     }
 });
 
-const WhitelistModel = mongoose.model('WhitelistModel', WhitelistSchema);
+const Whitelist = mongoose.model('Whitelist', WhitelistSchema);
 
-export { WhitelistModel }
+export { Whitelist }
