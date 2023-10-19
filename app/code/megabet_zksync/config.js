@@ -19,10 +19,22 @@ const config = {
                 }
             },
             megabet_main: {
-                finalize_bet_session_cron: {
+                lock_contract_cron: {
+                    status: false,
+                    cron_time: '* * * * * *'
+                },
+                generate_lottery_results_cron: {
+                    status: false,
+                    cron_time: '*/3 * * * *'
+                },
+                update_lottery_results_to_database_cron: {
                     status: true,
                     cron_time: '* * * * * *'
-                }
+                },
+                unlock_contract_cron: {
+                    status: false,
+                    cron_time: '* * * * * *'
+                },
             }
         }
     }

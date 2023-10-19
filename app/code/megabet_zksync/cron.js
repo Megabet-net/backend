@@ -3,7 +3,12 @@ import config from "./config.js";
 import dotenv from "dotenv";
 dotenv.config();
 import { initMegaBetTokenContract, updateWhitelistsToDatabase} from './model/megabet_token.js';
-import { initChainLinkGenerateRandomNumberContract, generateLotteryResult } from '../megabet_random_number/model/chainlink_generate_random_number.js';
+import { 
+    initChainLinkGenerateRandomNumberContract, 
+    generateLotteryResult,
+    updateLotteryResultsToDatabase
+} from '../megabet_random_number/model/chainlink_generate_random_number.js';
+import { delay } from '../megabet_core/helper.js';
 
 const scanWhitelistsHandler = async () => {
     console.log('Start Scan All Whitelists Process');
@@ -11,13 +16,17 @@ const scanWhitelistsHandler = async () => {
     console.log('End Scan All Whitelists Process');
 }
 
-const finalizeBetSessionHandler = async () => {
+const generateLotteryResultsHandler = async () => {
     const betSessionId = 1;
-    console.log(`Start finalizeBetSessionHandler ${betSessionId} Process`);
-    // Step 1: Lock Main Contract
-    // Step 2: Generate Random Number With Bet Session Id
-    await generateLotteryResult(betSessionId);
-    console.log(`End finalizeBetSessionHandler ${betSessionId} Process`);
+    for (let i = 1; i <= 27; i++) {
+        await generateLotteryResult(betSessionId);
+        await delay(5000);
+    }
+}
+
+const updateLotteryResultsToDatabaseHandler = async () => {
+    const betSessionId = 1;
+    await updateLotteryResultsToDatabase(betSessionId);
 }
 
 const scanWhitelistCronJob = async () => {
@@ -42,18 +51,32 @@ const finalizeBetSessionCronJob = async () => {
     await initChainLinkGenerateRandomNumberContract();
     const DEPLOY_MODE = process.env.DEPLOY_MODE || "";
     if (!DEPLOY_MODE) throw "Deploy mode not detected! Add it to the .env file!";
-    if (config[DEPLOY_MODE].cron_jobs.megabet_main.finalize_bet_session_cron.status) {
-        const job = new CronJob(
-            config[DEPLOY_MODE].cron_jobs.megabet_main.finalize_bet_session_cron.cron_time,
-            finalizeBetSessionHandler,
+    //Step 1: Lock Main Contract
+    //Step 2: Generate Lottery Results and Add Lottery Results to Queues
+    //TODO: Check Main Contract Lock
+    if (config[DEPLOY_MODE].cron_jobs.megabet_main.generate_lottery_results_cron.status) {
+        const generateLotteryResultsJob = new CronJob(
+            config[DEPLOY_MODE].cron_jobs.megabet_main.generate_lottery_results_cron.cron_time,
+            generateLotteryResultsHandler,
             null,
             true,
-            'America/Los_Angeles'
+            'Asia/Bangkok'
         );
-        job.start();
-    } else {
-        return null;
+        generateLotteryResultsJob.start();
     }
+    //Step 3: Update Lottery Results to Database
+    if (config[DEPLOY_MODE].cron_jobs.megabet_main.update_lottery_results_to_database_cron.status) {
+        console.log('update_lottery_results_to_database_cron');
+        const updateLotteryResultsToDatabaseJob = new CronJob(
+            config[DEPLOY_MODE].cron_jobs.megabet_main.update_lottery_results_to_database_cron.cron_time,
+            updateLotteryResultsToDatabaseHandler,
+            null,
+            true,
+            'Asia/Bangkok'
+        );
+        updateLotteryResultsToDatabaseJob.start();
+    }
+    //Step 4: Unlock Main Contract
 }
 
 export {scanWhitelistCronJob, finalizeBetSessionCronJob};
