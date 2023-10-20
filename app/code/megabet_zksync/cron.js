@@ -37,6 +37,10 @@ const unlockMainContractHandler = async () => {
     console.log('End Lock Contract Process');
 }
 
+const finalizeBetSessionHandler = async () => {
+    
+}
+
 const generateLotteryResultsHandler = async () => {
     const betSessionId = 1;
     for (let i = 1; i <= 27; i++) {
@@ -109,11 +113,11 @@ const finalizeBetSessionCronJob = async () => {
         updateLotteryResultsToDatabaseJob.start();
     }
     //Step 4: Finilize Bet Session and save data to database
-    if (lockStatusMegaBetMainContract && config[DEPLOY_MODE].cron_jobs.megabet_main.update_lottery_results_to_database_cron.status) {
+    if (lockStatusMegaBetMainContract && config[DEPLOY_MODE].cron_jobs.megabet_main.finalize_bet_session_cron.status) {
         console.log('update_lottery_results_to_database_cron');
         const updateLotteryResultsToDatabaseJob = new CronJob(
-            config[DEPLOY_MODE].cron_jobs.megabet_main.update_lottery_results_to_database_cron.cron_time,
-            updateLotteryResultsToDatabaseHandler,
+            config[DEPLOY_MODE].cron_jobs.megabet_main.finalize_bet_session_cron.cron_time,
+            finalizeBetSessionHandler,
             null,
             true,
             'Asia/Bangkok'

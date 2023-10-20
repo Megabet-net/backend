@@ -31,7 +31,7 @@ const config = {
                     status: false,
                     cron_time: '* * * * * *'
                 },
-                finilize_bet_session_cron: {
+                finalize_bet_session_cron: {
                     status: false,
                     cron_time: '* * * * * *'
                 },
