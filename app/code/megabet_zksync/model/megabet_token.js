@@ -48,7 +48,7 @@ export async function getWhiteListInformationById(whiteListId) {
         }
     } else {
         return {};
-    }    
+    }
 }
 
 export async function updateWhitelistToDatabase(whitelist) {

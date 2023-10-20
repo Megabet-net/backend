@@ -2,7 +2,16 @@ import { CronJob } from 'cron';
 import config from "./config.js";
 import dotenv from "dotenv";
 dotenv.config();
-import { initMegaBetTokenContract, updateWhitelistsToDatabase} from './model/megabet_token.js';
+import { 
+    initMegaBetTokenContract, 
+    updateWhitelistsToDatabase
+} from './model/megabet_token.js';
+import { 
+    initMegaBetMainContract,
+    getLockStatus,
+    lockMainContract, 
+    unlockMainContract 
+} from './model/megabet_main.js';
 import { 
     initChainLinkGenerateRandomNumberContract, 
     generateLotteryResult,
@@ -14,6 +23,18 @@ const scanWhitelistsHandler = async () => {
     console.log('Start Scan All Whitelists Process');
     await updateWhitelistsToDatabase();
     console.log('End Scan All Whitelists Process');
+}
+
+const lockMainContractHandler = async () => {
+    console.log('Start Lock Contract Process');
+    await lockMainContract();
+    console.log('End Lock Contract Process');
+}
+
+const unlockMainContractHandler = async () => {
+    console.log('Start Lock Contract Process');
+    await unlockMainContract();
+    console.log('End Lock Contract Process');
 }
 
 const generateLotteryResultsHandler = async () => {
@@ -49,12 +70,23 @@ const scanWhitelistCronJob = async () => {
 
 const finalizeBetSessionCronJob = async () => {
     await initChainLinkGenerateRandomNumberContract();
+    await initMegaBetMainContract();
     const DEPLOY_MODE = process.env.DEPLOY_MODE || "";
     if (!DEPLOY_MODE) throw "Deploy mode not detected! Add it to the .env file!";
     //Step 1: Lock Main Contract
+    if (config[DEPLOY_MODE].cron_jobs.megabet_main.lock_main_contract_cron.status) {
+        const lockMainContractJob = new CronJob(
+            config[DEPLOY_MODE].cron_jobs.megabet_main.lock_main_contract_cron.cron_time,
+            lockMainContractHandler,
+            null,
+            true,
+            'Asia/Bangkok'
+        );
+        lockMainContractJob.start();
+    }
+    const lockStatusMegaBetMainContract = await getLockStatus();
     //Step 2: Generate Lottery Results and Add Lottery Results to Queues
-    //TODO: Check Main Contract Lock
-    if (config[DEPLOY_MODE].cron_jobs.megabet_main.generate_lottery_results_cron.status) {
+    if (lockStatusMegaBetMainContract && config[DEPLOY_MODE].cron_jobs.megabet_main.generate_lottery_results_cron.status) {
         const generateLotteryResultsJob = new CronJob(
             config[DEPLOY_MODE].cron_jobs.megabet_main.generate_lottery_results_cron.cron_time,
             generateLotteryResultsHandler,
@@ -65,7 +97,7 @@ const finalizeBetSessionCronJob = async () => {
         generateLotteryResultsJob.start();
     }
     //Step 3: Update Lottery Results to Database
-    if (config[DEPLOY_MODE].cron_jobs.megabet_main.update_lottery_results_to_database_cron.status) {
+    if (lockStatusMegaBetMainContract && config[DEPLOY_MODE].cron_jobs.megabet_main.update_lottery_results_to_database_cron.status) {
         console.log('update_lottery_results_to_database_cron');
         const updateLotteryResultsToDatabaseJob = new CronJob(
             config[DEPLOY_MODE].cron_jobs.megabet_main.update_lottery_results_to_database_cron.cron_time,
@@ -76,7 +108,29 @@ const finalizeBetSessionCronJob = async () => {
         );
         updateLotteryResultsToDatabaseJob.start();
     }
-    //Step 4: Unlock Main Contract
+    //Step 4: Finilize Bet Session and save data to database
+    if (lockStatusMegaBetMainContract && config[DEPLOY_MODE].cron_jobs.megabet_main.update_lottery_results_to_database_cron.status) {
+        console.log('update_lottery_results_to_database_cron');
+        const updateLotteryResultsToDatabaseJob = new CronJob(
+            config[DEPLOY_MODE].cron_jobs.megabet_main.update_lottery_results_to_database_cron.cron_time,
+            updateLotteryResultsToDatabaseHandler,
+            null,
+            true,
+            'Asia/Bangkok'
+        );
+        updateLotteryResultsToDatabaseJob.start();
+    }
+    //Step 5: Unlock Main Contract
+    if (lockStatusMegaBetMainContract && config[DEPLOY_MODE].cron_jobs.megabet_main.unlock_main_contract_cron.status) {
+        const unlockMainContractJob = new CronJob(
+            config[DEPLOY_MODE].cron_jobs.megabet_main.unlock_main_contract_cron.cron_time,
+            unlockMainContractHandler,
+            null,
+            true,
+            'Asia/Bangkok'
+        );
+        unlockMainContractJob.start();
+    }
 }
 
 export {scanWhitelistCronJob, finalizeBetSessionCronJob};
