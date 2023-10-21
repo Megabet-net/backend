@@ -129,6 +129,11 @@ const ChainLinkGenerateRandomNumberAbi = [
 				"internalType": "uint32",
 				"name": "numWords",
 				"type": "uint32"
+			},
+			{
+				"internalType": "bool",
+				"name": "isSMode",
+				"type": "bool"
 			}
 		],
 		"name": "requestRandomWords",
@@ -187,6 +192,11 @@ const ChainLinkGenerateRandomNumberAbi = [
 			{
 				"internalType": "bool",
 				"name": "fulfilled",
+				"type": "bool"
+			},
+			{
+				"internalType": "bool",
+				"name": "isSMode",
 				"type": "bool"
 			},
 			{
@@ -261,6 +271,11 @@ const ChainLinkGenerateRandomNumberAbi = [
 			{
 				"internalType": "bool",
 				"name": "exists",
+				"type": "bool"
+			},
+			{
+				"internalType": "bool",
+				"name": "isSMode",
 				"type": "bool"
 			},
 			{

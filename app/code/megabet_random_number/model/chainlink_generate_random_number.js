@@ -24,13 +24,18 @@ export async function initChainLinkGenerateRandomNumberContract() {
     );
 }
 
-export async function generateLotteryResult(betSessionId) {
+export async function generateLotteryResult(betSessionId, isSMode) {
     if (!chainLinkGenerateRandomNumberContract) {
         return null;
     }
     const DEPLOY_MODE = process.env.DEPLOY_MODE || "";
     if (!DEPLOY_MODE) throw "Deploy mode not detected! Add it to the .env file!";
-    const generateLotteryResultTx = await chainLinkGenerateRandomNumberContract.requestRandomWords(betSessionId, config[DEPLOY_MODE].number_word_per_request);
+    const numWords = (isSMode == false) ? config[DEPLOY_MODE].number_word_per_request : 1;
+    const generateLotteryResultTx = await chainLinkGenerateRandomNumberContract.requestRandomWords(
+        betSessionId, 
+        numWords,
+        isSMode
+    );
     const generateLotteryResultRes = await generateLotteryResultTx.wait(2);
     if (generateLotteryResultRes.transactionHash) {
         const lotteryResultQueue = await LotteryResultQueue.findOne({ hash: generateLotteryResultRes.transactionHash }).exec();
@@ -40,8 +45,9 @@ export async function generateLotteryResult(betSessionId) {
             LotteryResultQueue.create({
                 hash: generateLotteryResultRes.transactionHash,
                 block_hash: generateLotteryResultRes.blockHash,
+                is_s_mode: isSMode,
                 bet_session_id: betSessionId,
-                num_words: config[DEPLOY_MODE].number_word_per_request
+                num_words: numWords
             });
             console.log(`Added LotteryResultQueue: hash: ${generateLotteryResultRes.transactionHash}`);
         }
@@ -70,21 +76,16 @@ export async function updateLotteryResultsToDatabase(betSessionId) {
                 }
                 // Update database and remove queue
                 const lotteryResult = await LotteryResult.findOne({ hash: lotteryResultQueue.hash }).exec();
-                if (lotteryResult.hash) {
-                    await LotteryResult.updateOne({
-                        fulfilled: true,
-                        results: JSON.stringify(lotteryResults)
-                    }, { hash: lotteryResultQueue.hash });
-                } else {
+                if (!lotteryResult.hash) {
                     await LotteryResult.create({
                         hash: lotteryResultQueue.hash,
+                        is_s_mode: lotteryResultQueue.is_s_mode,
                         fulfilled: true,
                         bet_session_id: betSessionId,
                         results: JSON.stringify(lotteryResults)
                     });
                     await LotteryResultQueue.deleteOne({ block_hash: lotteryResultQueue.block_hash });
                 }
-                
             }
         }
     }

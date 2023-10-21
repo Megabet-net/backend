@@ -24,6 +24,9 @@ const LotteryResultQueueSchema = new mongoose.Schema({
         type: String,
         unique : true
     },
+    is_s_mode: {
+        type: Boolean
+    },
     bet_session_id: {
         type: String
     },
@@ -35,6 +38,9 @@ const LotteryResultQueueSchema = new mongoose.Schema({
 const LotteryResultSchema = new mongoose.Schema({
     hash: {
         type: String
+    },
+    is_s_mode: {
+        type: Boolean
     },
     fulfilled: {
         type: Boolean
@@ -50,7 +56,25 @@ const LotteryResultSchema = new mongoose.Schema({
     }
 });
 
+const BetSessionSchema = new mongoose.Schema({
+    bet_session_id: {
+        type: String
+    },
+    status: {
+        type: String,
+        enum: ['Processing', 'Complete']
+    },
+    created_time: {
+        type: String
+    },
+    num_players: {
+        type: String,
+    }
+});
+
 const Whitelist = mongoose.model('Whitelist', WhitelistSchema);
 const LotteryResult = mongoose.model('LotteryResult', LotteryResultSchema);
 const LotteryResultQueue = mongoose.model('LotteryResultQueue', LotteryResultQueueSchema);
-export { Whitelist, LotteryResult, LotteryResultQueue }
+const BetSession = mongoose.model('BetSession', BetSessionSchema);
+
+export { Whitelist, LotteryResult, LotteryResultQueue, BetSession }

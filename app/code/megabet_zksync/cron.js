@@ -10,7 +10,9 @@ import {
     initMegaBetMainContract,
     getLockStatus,
     lockMainContract, 
-    unlockMainContract 
+    unlockMainContract,
+    finalizeBetSession,
+    getNumBetSessions
 } from './model/megabet_main.js';
 import { 
     initChainLinkGenerateRandomNumberContract, 
@@ -37,20 +39,24 @@ const unlockMainContractHandler = async () => {
     console.log('End Lock Contract Process');
 }
 
-const finalizeBetSessionHandler = async () => {
-    
+const finalizeBetSessionHandler = async (betSessionId) => {
+    console.log('Start Finalize Bet Session Process');
+    await finalizeBetSession(betSessionId);
+    console.log('Start Finalize Bet Session Process');
 }
 
-const generateLotteryResultsHandler = async () => {
-    const betSessionId = 1;
-    for (let i = 1; i <= 27; i++) {
-        await generateLotteryResult(betSessionId);
+const generateLotteryResultsHandler = async (betSessionId) => {
+    // Genereate numbers for GMode
+    for (let i = 1; i <= 26; i++) {
+        await generateLotteryResult(betSessionId, false);
         await delay(5000);
     }
+    // Genereate a number for SMode
+    await delay(5000);
+    await generateLotteryResult(betSessionId, true);
 }
 
-const updateLotteryResultsToDatabaseHandler = async () => {
-    const betSessionId = 1;
+const updateLotteryResultsToDatabaseHandler = async (betSessionId) => {
     await updateLotteryResultsToDatabase(betSessionId);
 }
 
@@ -77,6 +83,7 @@ const finalizeBetSessionCronJob = async () => {
     await initMegaBetMainContract();
     const DEPLOY_MODE = process.env.DEPLOY_MODE || "";
     if (!DEPLOY_MODE) throw "Deploy mode not detected! Add it to the .env file!";
+    const betSessionId = await getNumBetSessions();
     //Step 1: Lock Main Contract
     if (config[DEPLOY_MODE].cron_jobs.megabet_main.lock_main_contract_cron.status) {
         const lockMainContractJob = new CronJob(
@@ -93,7 +100,7 @@ const finalizeBetSessionCronJob = async () => {
     if (lockStatusMegaBetMainContract && config[DEPLOY_MODE].cron_jobs.megabet_main.generate_lottery_results_cron.status) {
         const generateLotteryResultsJob = new CronJob(
             config[DEPLOY_MODE].cron_jobs.megabet_main.generate_lottery_results_cron.cron_time,
-            generateLotteryResultsHandler,
+            generateLotteryResultsHandler(betSessionId),
             null,
             true,
             'Asia/Bangkok'
@@ -105,7 +112,7 @@ const finalizeBetSessionCronJob = async () => {
         console.log('update_lottery_results_to_database_cron');
         const updateLotteryResultsToDatabaseJob = new CronJob(
             config[DEPLOY_MODE].cron_jobs.megabet_main.update_lottery_results_to_database_cron.cron_time,
-            updateLotteryResultsToDatabaseHandler,
+            updateLotteryResultsToDatabaseHandler(betSessionId),
             null,
             true,
             'Asia/Bangkok'
@@ -117,7 +124,7 @@ const finalizeBetSessionCronJob = async () => {
         console.log('update_lottery_results_to_database_cron');
         const updateLotteryResultsToDatabaseJob = new CronJob(
             config[DEPLOY_MODE].cron_jobs.megabet_main.finalize_bet_session_cron.cron_time,
-            finalizeBetSessionHandler,
+            finalizeBetSessionHandler(betSessionId),
             null,
             true,
             'Asia/Bangkok'

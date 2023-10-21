@@ -3,7 +3,7 @@ const config = {
         contract_address: {
             megabet_token: "0xd4403c156a0A2820Bf68BfA33FA74C67F306Ce13",
             megabet_staking: "",
-            megabet_main: "0x0774Ad9Bb0259E1D760b4e0Cd2CecEc860627d29"
+            megabet_main: "0x310cE66E370b4Cb1aBF5da7A629Ef334Aff71555"
         },
         network: {
             url: "https://zksync2-testnet.zksync.dev",
@@ -20,7 +20,7 @@ const config = {
             },
             megabet_main: {
                 lock_main_contract_cron: {
-                    status: true,
+                    status: false,
                     cron_time: '*/3 * * * *'
                 },
                 generate_lottery_results_cron: {
@@ -32,8 +32,8 @@ const config = {
                     cron_time: '* * * * * *'
                 },
                 finalize_bet_session_cron: {
-                    status: false,
-                    cron_time: '* * * * * *'
+                    status: true,
+                    cron_time: '*/3 * * * *'
                 },
                 unlock_main_contract_cron: {
                     status: false,

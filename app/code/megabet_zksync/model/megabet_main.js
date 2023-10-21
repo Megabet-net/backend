@@ -1,6 +1,7 @@
 import { Provider } from "zksync-web3";
 import * as ethers from "ethers";
 import MegaBetMainContractAbi from "../contracts/megabet_main.js";
+import { LotteryResult } from '../../megabet_core/model/resource_model/database.js';
 import config from "../config.js";
 import dotenv from "dotenv";
 dotenv.config();
@@ -55,4 +56,18 @@ export async function unlockMainContract() {
         console.log('Unlock Main Contract Successfully');
     }
     return true;
+}
+
+export async function getNumBetSessions() {
+    if (!megaBetMainContract) {
+        return null;
+    }
+    return await megaBetMainContract.getNumBetSessions().toString();
+}
+
+export async function finalizeBetSession(betSessionId) {
+    if (!megaBetMainContract) {
+        return null;
+    }
+    //TODO: Check Bet Session Information
 }
