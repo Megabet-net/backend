@@ -65,9 +65,18 @@ export async function getNumBetSessions() {
     return await megaBetMainContract.getNumBetSessions().toString();
 }
 
+export async function getBetSessionInformationById(betSessionId) {
+    if (!megaBetMainContract) {
+        return null;
+    }
+    return await megaBetMainContract.betSessions(betSessionId);
+}
+
 export async function finalizeBetSession(betSessionId) {
     if (!megaBetMainContract) {
         return null;
     }
     //TODO: Check Bet Session Information
+    const betSessionInformation = await getBetSessionInformationById(betSessionId);
+    console.log(betSessionInformation);
 }

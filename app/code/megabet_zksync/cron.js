@@ -122,14 +122,14 @@ const finalizeBetSessionCronJob = async () => {
     //Step 4: Finilize Bet Session and save data to database
     if (lockStatusMegaBetMainContract && config[DEPLOY_MODE].cron_jobs.megabet_main.finalize_bet_session_cron.status) {
         console.log('update_lottery_results_to_database_cron');
-        const updateLotteryResultsToDatabaseJob = new CronJob(
+        const finalizeBetSessionJob = new CronJob(
             config[DEPLOY_MODE].cron_jobs.megabet_main.finalize_bet_session_cron.cron_time,
             finalizeBetSessionHandler(betSessionId),
             null,
             true,
             'Asia/Bangkok'
         );
-        updateLotteryResultsToDatabaseJob.start();
+        finalizeBetSessionJob.start();
     }
     //Step 5: Unlock Main Contract
     if (lockStatusMegaBetMainContract && config[DEPLOY_MODE].cron_jobs.megabet_main.unlock_main_contract_cron.status) {
