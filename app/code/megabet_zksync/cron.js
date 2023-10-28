@@ -42,18 +42,22 @@ const unlockMainContractHandler = async () => {
 const finalizeBetSessionHandler = async (betSessionId) => {
     console.log('Start Finalize Bet Session Process');
     await finalizeBetSession(betSessionId);
-    console.log('Start Finalize Bet Session Process');
+    console.log('End Finalize Bet Session Process');
 }
 
 const generateLotteryResultsHandler = async (betSessionId) => {
+    console.log('Start Generate Lottery Results Process');
     // Genereate numbers for GMode
     for (let i = 1; i <= 26; i++) {
         await generateLotteryResult(betSessionId, false);
+        console.log('Generate G Lottery Result Process');
         await delay(5000);
     }
     // Genereate a number for SMode
     await delay(5000);
     await generateLotteryResult(betSessionId, true);
+    console.log('Generate S Lottery Result Process');
+    console.log('End Generate Lottery Results Process');
 }
 
 const updateLotteryResultsToDatabaseHandler = async (betSessionId) => {
@@ -109,7 +113,6 @@ const finalizeBetSessionCronJob = async () => {
     }
     //Step 3: Update Lottery Results to Database
     if (lockStatusMegaBetMainContract && config[DEPLOY_MODE].cron_jobs.megabet_main.update_lottery_results_to_database_cron.status) {
-        console.log('update_lottery_results_to_database_cron');
         const updateLotteryResultsToDatabaseJob = new CronJob(
             config[DEPLOY_MODE].cron_jobs.megabet_main.update_lottery_results_to_database_cron.cron_time,
             updateLotteryResultsToDatabaseHandler(betSessionId),
@@ -121,7 +124,7 @@ const finalizeBetSessionCronJob = async () => {
     }
     //Step 4: Finilize Bet Session and save data to database
     if (lockStatusMegaBetMainContract && config[DEPLOY_MODE].cron_jobs.megabet_main.finalize_bet_session_cron.status) {
-        console.log('update_lottery_results_to_database_cron');
+        console.log(config[DEPLOY_MODE].cron_jobs.megabet_main.finalize_bet_session_cron.cron_time);
         const finalizeBetSessionJob = new CronJob(
             config[DEPLOY_MODE].cron_jobs.megabet_main.finalize_bet_session_cron.cron_time,
             finalizeBetSessionHandler(betSessionId),

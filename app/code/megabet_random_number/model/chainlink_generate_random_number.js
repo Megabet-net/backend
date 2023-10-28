@@ -64,10 +64,10 @@ export async function updateLotteryResultsToDatabase(betSessionId) {
     for (const lotteryResultQueue of lotteryResultQueues) {
         if (lotteryResultQueue.block_hash) {
             const blockHash = lotteryResultQueue.block_hash;
-            console.log(blockHash);
+            console.log('blockHash:', blockHash);
             const events = await chainLinkGenerateRandomNumberContract.queryFilter('RequestSent', lotteryResultQueue.block_hash);
             const {requestId, numWords} = events[0].args;
-            console.log(requestId.toString());
+            console.log('requestId:', requestId.toString());
             const lotteryResultInfo = await getLotteryResultRequestById(requestId.toString());
             if (lotteryResultInfo.fulfilled == true) {
                 let lotteryResults = [];
@@ -76,7 +76,7 @@ export async function updateLotteryResultsToDatabase(betSessionId) {
                 }
                 // Update database and remove queue
                 const lotteryResult = await LotteryResult.findOne({ hash: lotteryResultQueue.hash }).exec();
-                if (!lotteryResult.hash) {
+                if (!lotteryResult || !lotteryResult.hash) {
                     await LotteryResult.create({
                         hash: lotteryResultQueue.hash,
                         is_s_mode: lotteryResultQueue.is_s_mode,

@@ -62,7 +62,8 @@ export async function getNumBetSessions() {
     if (!megaBetMainContract) {
         return null;
     }
-    return await megaBetMainContract.getNumBetSessions().toString();
+    const betSessionId = await megaBetMainContract.getNumBetSessions();
+    return betSessionId.toString();
 }
 
 export async function getBetSessionInformationById(betSessionId) {
@@ -77,6 +78,29 @@ export async function finalizeBetSession(betSessionId) {
         return null;
     }
     //TODO: Check Bet Session Information
+    console.log('1');
     const betSessionInformation = await getBetSessionInformationById(betSessionId);
-    console.log(betSessionInformation);
+    console.log('2');
+    if (betSessionInformation && betSessionInformation.status == 0) {
+        const lotteryResults = await LotteryResult.find({ bet_session_id: betSessionId}).exec();
+        let gModeResults = [];
+        let sModeResult = 0;
+        for (const lotteryResult of lotteryResults) {
+            if (lotteryResult.fulfilled) {
+                if (lotteryResult.is_s_mode == false) {
+                    const resultsTmp = JSON.parse(lotteryResult.results);
+                    gModeResults.push(...resultsTmp);
+                } else if (lotteryResult.is_s_mode == true) {
+                    const resultsTmp = JSON.parse(lotteryResult.results);
+                    sModeResult = resultsTmp[0];
+                }
+            }
+        }
+        console.log('3');
+        const finalizeBetSessiontx = await megaBetMainContract.finalizeBetSession(betSessionId, gModeResults , sModeResult);
+        console.log('4');
+        await finalizeBetSessiontx.wait(2);
+        console.log('5');
+        return true;
+    }
 }
