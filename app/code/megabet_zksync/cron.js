@@ -12,7 +12,10 @@ import {
     lockMainContract, 
     unlockMainContract,
     finalizeBetSession,
-    getNumBetSessions
+    getNumBetSessions,
+    dealtWithPlayersInSession,
+    getNumPlayersByBetSessionId,
+    getNumDealtWithPlayersByBetSessionId
 } from './model/megabet_main.js';
 import { 
     initChainLinkGenerateRandomNumberContract, 
@@ -62,6 +65,20 @@ const generateLotteryResultsHandler = async (betSessionId) => {
 
 const updateLotteryResultsToDatabaseHandler = async (betSessionId) => {
     await updateLotteryResultsToDatabase(betSessionId);
+}
+
+const dealtWithPlayersInSessionHandler = async (betSessionId) => {
+    console.log('Start Dealt With In Session Process');
+    const batchNumPlayersConfig = config[DEPLOY_MODE].cron_jobs.megabet_main.dealt_with_in_session_cron.batch_num_players;
+    do {
+        let totalPlayers = await getNumPlayersByBetSessionId(betSessionId);
+        let totalDealtWithPlayers = await getNumDealtWithPlayersByBetSessionId(betSessionId);
+        let totalRemainingPlayers = totalPlayers.sub(totalDealtWithPlayers);
+        let batchNumPlayers = (totalRemainingPlayers.lte(batchNumPlayersConfig)) ? totalRemainingPlayers.toNumber() : batchNumPlayersConfig;
+        await dealtWithPlayersInSession(betSessionId, batchNumPlayers);
+        await delay(3000);
+    } while (totalRemainingPlayers.gt(0));
+    console.log('End Dealt With In Session Process');
 }
 
 const scanWhitelistCronJob = async () => {
@@ -124,7 +141,6 @@ const finalizeBetSessionCronJob = async () => {
     }
     //Step 4: Finilize Bet Session and save data to database
     if (lockStatusMegaBetMainContract && config[DEPLOY_MODE].cron_jobs.megabet_main.finalize_bet_session_cron.status) {
-        console.log(config[DEPLOY_MODE].cron_jobs.megabet_main.finalize_bet_session_cron.cron_time);
         const finalizeBetSessionJob = new CronJob(
             config[DEPLOY_MODE].cron_jobs.megabet_main.finalize_bet_session_cron.cron_time,
             finalizeBetSessionHandler(betSessionId),
@@ -134,7 +150,18 @@ const finalizeBetSessionCronJob = async () => {
         );
         finalizeBetSessionJob.start();
     }
-    //Step 5: Unlock Main Contract
+    //Step 5: Dealt with player in bet session
+    if (lockStatusMegaBetMainContract && config[DEPLOY_MODE].cron_jobs.megabet_main.dealt_with_in_session_cron.status) {
+        const dealtWithInSessionJob = new CronJob(
+            config[DEPLOY_MODE].cron_jobs.megabet_main.dealt_with_in_session_cron.cron_time,
+            dealtWithPlayersInSessionHandler(betSessionId),
+            null,
+            true,
+            'Asia/Bangkok'
+        );
+        dealtWithInSessionJob.start();
+    }
+    //Step 6: Unlock Main Contract
     if (lockStatusMegaBetMainContract && config[DEPLOY_MODE].cron_jobs.megabet_main.unlock_main_contract_cron.status) {
         const unlockMainContractJob = new CronJob(
             config[DEPLOY_MODE].cron_jobs.megabet_main.unlock_main_contract_cron.cron_time,

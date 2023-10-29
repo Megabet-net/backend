@@ -77,10 +77,7 @@ export async function finalizeBetSession(betSessionId) {
     if (!megaBetMainContract) {
         return null;
     }
-    //TODO: Check Bet Session Information
-    console.log('1');
     const betSessionInformation = await getBetSessionInformationById(betSessionId);
-    console.log('2');
     if (betSessionInformation && betSessionInformation.status == 0) {
         const lotteryResults = await LotteryResult.find({ bet_session_id: betSessionId}).exec();
         let gModeResults = [];
@@ -96,11 +93,43 @@ export async function finalizeBetSession(betSessionId) {
                 }
             }
         }
-        console.log('3');
-        const finalizeBetSessiontx = await megaBetMainContract.finalizeBetSession(betSessionId, gModeResults , sModeResult);
-        console.log('4');
-        await finalizeBetSessiontx.wait(2);
-        console.log('5');
+        const finalizeBetSessionTx = await megaBetMainContract.finalizeBetSession(betSessionId, gModeResults , sModeResult);
+        await finalizeBetSessionTx.wait(2);
         return true;
+    } {
+        return;
     }
+}
+
+export async function dealtWithPlayersInSession(betSessionId, batchNumPlayers) {
+    if (!megaBetMainContract) {
+        return null;
+    }
+    const betSessionInformation = await getBetSessionInformationById(betSessionId);
+    if (betSessionInformation && betSessionInformation.status == 1) {
+        const totalPlayerInBetSession = betSessionInformation.num_players;
+        const totalDealtWithPlayerInBetSession = betSessionInformation.num_dealt_with_players;
+        if (totalPlayerInBetSession.gt(totalDealtWithPlayerInBetSession)) {
+            const dealWithPlayersInBetSessionTx = await megaBetMainContract.dealWithPlayersInBetSession(betSessionId, batchNumPlayers);
+            await dealWithPlayersInBetSessionTx.wait(2);
+            return true;
+        }
+        
+    }
+}
+
+export async function getNumPlayersByBetSessionId(betSessionId) {
+    if (!megaBetMainContract) {
+        return null;
+    }
+    const betSessionInformation = await getBetSessionInformationById(betSessionId);
+    return betSessionInformation.num_players;
+}
+
+export async function getNumDealtWithPlayersByBetSessionId(betSessionId) {
+    if (!megaBetMainContract) {
+        return null;
+    }
+    const betSessionInformation = await getBetSessionInformationById(betSessionId);
+    return betSessionInformation.num_dealt_with_players;
 }

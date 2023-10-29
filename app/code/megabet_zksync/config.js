@@ -35,6 +35,11 @@ const config = {
                     status: true,
                     cron_time: '*/2 * * * *'
                 },
+                dealt_with_in_session_cron: {
+                    status: true,
+                    cron_time: '*/2 * * * *',
+                    batch_num_players: 10
+                },
                 unlock_main_contract_cron: {
                     status: false,
                     cron_time: '*/3 * * * *'
