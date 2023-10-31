@@ -45,6 +45,12 @@ const config = {
                     cron_time: '*/3 * * * *'
                 },
             }
+        },
+        sockets: {
+            show_results: {
+                port: 3008,
+                path: '/show_results'
+            }
         }
     }
 }

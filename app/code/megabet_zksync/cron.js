@@ -2,7 +2,7 @@ import { CronJob } from 'cron';
 import config from "./config.js";
 import dotenv from "dotenv";
 dotenv.config();
-import { 
+import {
     initMegaBetTokenContract, 
     updateWhitelistsToDatabase
 } from './model/megabet_token.js';
@@ -22,6 +22,7 @@ import {
     generateLotteryResult,
     updateLotteryResultsToDatabase
 } from '../megabet_random_number/model/chainlink_generate_random_number.js';
+import {initWebSocket, closeWebSocket} from './socket.js';
 import { delay } from '../megabet_core/helper.js';
 
 const scanWhitelistsHandler = async () => {
@@ -49,6 +50,7 @@ const finalizeBetSessionHandler = async (betSessionId) => {
 }
 
 const generateLotteryResultsHandler = async (betSessionId) => {
+    
     console.log('Start Generate Lottery Results Process');
     // Genereate numbers for GMode
     for (let i = 1; i <= 26; i++) {
@@ -69,6 +71,8 @@ const updateLotteryResultsToDatabaseHandler = async (betSessionId) => {
 
 const dealtWithPlayersInSessionHandler = async (betSessionId) => {
     console.log('Start Dealt With In Session Process');
+    const DEPLOY_MODE = process.env.DEPLOY_MODE || "";
+    if (!DEPLOY_MODE) throw "Deploy mode not detected! Add it to the .env file!";
     const batchNumPlayersConfig = config[DEPLOY_MODE].cron_jobs.megabet_main.dealt_with_in_session_cron.batch_num_players;
     do {
         let totalPlayers = await getNumPlayersByBetSessionId(betSessionId);

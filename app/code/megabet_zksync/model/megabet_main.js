@@ -3,6 +3,7 @@ import * as ethers from "ethers";
 import MegaBetMainContractAbi from "../contracts/megabet_main.js";
 import { LotteryResult } from '../../megabet_core/model/resource_model/database.js';
 import config from "../config.js";
+import {initShowResultSocket} from "../socket.js";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -95,6 +96,7 @@ export async function finalizeBetSession(betSessionId) {
         }
         const finalizeBetSessionTx = await megaBetMainContract.finalizeBetSession(betSessionId, gModeResults , sModeResult);
         await finalizeBetSessionTx.wait(2);
+        await initShowResultSocket(gModeResults , sModeResult);
         return true;
     } {
         return;
